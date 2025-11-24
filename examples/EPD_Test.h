@@ -37,14 +37,6 @@
 #include "Debug.h"
 #include <stdlib.h> // malloc() free()
 
-int EPD_7in5_test(void);
-int EPD_7in5_HD_test(void);
-int EPD_7in5_V2_test(void);
-int EPD_7in5_V2_test_old(void);
-int EPD_7in5bc_test(void);
 int EPD_7in5b_V2_test(void);
-int EPD_7in5b_V2_test_old(void);
-int EPD_7in5b_HD_test(void);
-
 
 #endif

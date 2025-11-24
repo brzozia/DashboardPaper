@@ -6,30 +6,9 @@ DIR_Examples = ./examples
 DIR_BIN		 = ./bin
 
 EPD = NULL
-ifeq ($(EPD), epd7in5)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5_test.c
-else ifeq ($(EPD), epd7in5V2)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5_V2.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5_V2_test.c
-else ifeq ($(EPD), epd7in5V2_old)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5_V2_old.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5_V2_test_old.c
-else ifeq ($(EPD), epd7in5bc)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5bc.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5bc_test.c
-else ifeq ($(EPD), epd7in5bV2)
+ifeq ($(EPD), epd7in5bV2)
 	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5b_V2.c
 	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5b_V2_test.c
-else ifeq ($(EPD), epd7in5bV2_old)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5b_V2_old.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5b_V2_test_old.c
-else ifeq ($(EPD), epd7in5HD)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5_HD.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5_HD_test.c
-else ifeq ($(EPD), epd7in5bHD)
-	OBJ_C_EPD = ${DIR_EPD}/EPD_7in5b_HD.c
-	OBJ_C_Examples = ${DIR_Examples}/EPD_7in5b_HD_test.c
 else 
     OBJ_C_EPD = NULL
     OBJ_C_Examples = NULL
