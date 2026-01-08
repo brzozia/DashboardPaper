@@ -1,3 +1,6 @@
+#ifndef PAPER_DATA_H
+#define PAPER_DATA_H
+
 #include <time.h>
 #include <stdint.h>
 
@@ -16,3 +19,5 @@ struct Data {
     uint8_t bbLight;
     char bbLog[BUFFER_SIZE];
 };
+
+#endif // PAPER_DATA_H
