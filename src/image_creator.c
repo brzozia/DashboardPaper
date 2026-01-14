@@ -8,11 +8,11 @@ void initialize_dashboard(Dashboard* dashboard)
     
     if((dashboard->blackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
         printf("Failed to apply for black memory...\r\n");
-        return -1;
+        return;
     }
     if((dashboard->redImage = (UBYTE *)malloc(Imagesize)) == NULL) {
         printf("Failed to apply for red memory...\r\n");
-        return -1;
+        return;
     }
 
     Paint_NewImage(dashboard->blackImage, SCREEN_WIDTH, SCREEN_HEIGHT , 0, WHITE);

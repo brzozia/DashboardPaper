@@ -4,6 +4,12 @@
 #include "csv_reader.h"
 #include "image_creator.h"
 
+// #define UPLOAD_TO_EPAPER   //uncomment to compile on RPI
+
+#ifdef UPLOAD_TO_EPAPER
+#include "../lib/e-Paper/EPD_7in5b_V2.h"
+#endif
+
 // void Handler(int signo)
 // {
 //     //System Exit
@@ -89,6 +95,32 @@ int main(void)
     // Update the dashboard with new data
     update_dashboard(&dashboard, &pseudoData);
     save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
+
+    #ifdef UPLOAD_TO_EPAPER
+    if(DEV_Module_Init()!=0){
+        return -1;
+    }
+
+    EPD_7IN5B_V2_Init();
+    EPD_7IN5B_V2_Clear();
+
+    printf("start displaying for 2s");
+    EPD_7IN5B_V2_Display(dashboard.blackImage, dashboard.redImage);
+    DEV_Delay_ms(2000);  
+
+    printf("start clearing before deep sleep");
+    EPD_7IN5B_V2_Init();
+    EPD_7IN5B_V2_Clear();
+
+    printf("entering sleep mode");
+    EPD_7IN5B_V2_Sleep();
+    DEV_Delay_ms(2000);//important, at least 2s ()
+    // close 5V
+    printf("close 5V, Module enters 0 power consumption ...\r\n");
+    DEV_Module_Exit();
+    #endif
+
+
 
     // Close the dashboard and free resources
     close_dashboard(&dashboard);
