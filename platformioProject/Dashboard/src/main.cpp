@@ -13,8 +13,8 @@
 #endif
 
 boolean useWifi = false;
-const char *ssid = "";
-const char *password = "";
+const char *ssid = "ALICE-CERN_lab";
+const char *password = "Alicja2024";
 
 void listFiles()
 {
@@ -80,9 +80,9 @@ void loop()
     Serial.println(dataToWrite.bbTemp);
     Serial.println(dataToWrite.bbHumid);
     Serial.println(dataToWrite.lastUpdate);
-    delay(3000);
+    // delay(3000);
 
-    // #ifdef TEST_CANVAS_CREATION
+    #ifdef TEST_CANVAS_CREATION
     //     struct Data pseudoData;
     //     pseudoData.lastUpdate = time(NULL);
 
@@ -106,13 +106,13 @@ void loop()
     //     strcpy(pseudoData.ipData[3][2], "2023-01-04");
     //     strcpy(pseudoData.ipData[3][3], "Inactive");
 
-    // Dashboard dashboard;
-    // initialize_dashboard(&dashboard);
+    Dashboard dashboard;
+    initialize_dashboard(&dashboard);
 
-    // // Update the dashboard with new data
-    // update_dashboard(&dashboard, &dataToWrite);
-    // save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
-    // #endif // TEST_CANVAS_CREATION
+    // Update the dashboard with new data
+    update_dashboard(&dashboard, &dataToWrite);
+    save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
+    #endif // TEST_CANVAS_CREATION
 
     Serial.println("Dashboard images created.");
 
@@ -145,8 +145,9 @@ void loop()
     //     DEV_Module_Exit();
     // #endif
 
-    // #ifdef TEST_CANVAS_CREATION
-    //     // Close the dashboard and free resources
-    // close_dashboard(&dashboard);
-    // #endif // TEST_CANVAS_CREATION
+    #ifdef TEST_CANVAS_CREATION
+        // Close the dashboard and free resources
+    close_dashboard(&dashboard);
+    #endif // TEST_CANVAS_CREATION
+    delay(10000); // Wait for 10 seconds before next update
 }
