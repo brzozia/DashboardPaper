@@ -42,3 +42,8 @@
 
 # debug information files
 *.dwo
+
+build/
+test_program
+.vscode/
+*.png

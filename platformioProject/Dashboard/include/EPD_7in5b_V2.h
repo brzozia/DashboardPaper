@@ -1,12 +1,15 @@
 /*****************************************************************************
-* | File      	:	EPD_Test.h
+* | File      	:	EPD_7in5_B.h
 * | Author      :   Waveshare team
-* | Function    :   e-Paper test Demo
+* | Function    :   Electronic paper driver
 * | Info        :
 *----------------
-* |	This version:   V1.1
-* | Date        :   2022-07-28
+* |	This version:   V2.0
+* | Date        :   2024-08-07
 * | Info        :   
+* 1.Remove:ImageBuff[EPD_HEIGHT * EPD_WIDTH / 8]
+* 2.Change:EPD_Display(UBYTE *Image)
+*   Need to pass parameters: pointer to cached data
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -27,16 +30,25 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#ifndef _EPD_TEST_H_
-#define _EPD_TEST_H_
+#ifndef _EPD_7IN5B_V2_H_
+#define _EPD_7IN5B_V2_H_
 
 #include "DEV_Config.h"
-#include "GUI_Paint.h"
-#include "GUI_BMPfile.h"
-#include "ImageData.h"
-#include "Debug.h"
-#include <stdlib.h> // malloc() free()
 
-int EPD_7in5b_V2_test(void);
 
+// Display resolution
+#define EPD_7IN5B_V2_WIDTH       800
+#define EPD_7IN5B_V2_HEIGHT      480
+
+UBYTE EPD_7IN5B_V2_Init(void);
+UBYTE EPD_7IN5B_V2_Init_Fast(void);
+UBYTE EPD_7IN5B_V2_Init_Part(void);
+void EPD_7IN5B_V2_Clear(void);
+void EPD_7IN5B_V2_ClearRed(void);
+void EPD_7IN5B_V2_ClearBlack(void);
+void EPD_7IN5B_V2_Display(const UBYTE *blackimage, const UBYTE *ryimage);
+void EPD_7IN5B_V2_Display_Fast(const UBYTE *blackimage);
+void EPD_7IN5B_V2_Display_Base_color(UBYTE color);
+void EPD_7IN5B_V2_Display_Partial(const UBYTE *Image, UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
+void EPD_7IN5B_V2_Sleep(void);
 #endif
