@@ -31,7 +31,11 @@ void listFiles()
 
 void setup(void)
 {
+    
     Serial.begin(115200);
+    Serial.println("Waiting 10s before starting program...");
+    delay(10000); // Wait for 10 seconds before starting program
+
 
     // Initialize littleFS
     if (!LittleFS.begin())
@@ -77,6 +81,7 @@ void loop()
     Serial.println(dataToWrite.ipData[2][2]);
     Serial.println(dataToWrite.ipData[2][3]);
 
+
     Serial.println(dataToWrite.bbTemp);
     Serial.println(dataToWrite.bbHumid);
     Serial.println(dataToWrite.lastUpdate);
@@ -111,43 +116,46 @@ void loop()
 
     // Update the dashboard with new data
     update_dashboard(&dashboard, &dataToWrite);
-    save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
+    // save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
     #endif // TEST_CANVAS_CREATION
 
     Serial.println("Dashboard images created.");
 
     // #ifdef UPLOAD_TO_EPAPER
-    //     if (DEV_Module_Init() != 0)
-    //     {
-    //         Serial.println("Failed to initialize module.\r\n");
-    //         return;
-    //     }
+    Serial.println("Uploading to e-paper...");
+    if (DEV_Module_Init() != 0)
+    {
+        Serial.println("Failed to initialize module.");
+        return;
+    }
 
-    //     Serial.println("1");
-    //     EPD_7IN5B_V2_Init();
-    //     Serial.println("2");
-    //     EPD_7IN5B_V2_Clear();
-    //     Serial.println("3");
+    Serial.println("1");
+    EPD_7IN5B_V2_Init();
+    Serial.println("2");
+    EPD_7IN5B_V2_Clear();
+    Serial.println("3");
 
-    //     Serial.println("start displaying for 2s");
-    //     EPD_7IN5B_V2_Display(dashboard.blackImage, dashboard.redImage);
-    //     DEV_Delay_ms(2000);
+    Serial.println("start displaying for 60s");
+    EPD_7IN5B_V2_Display(dashboard.blackImage, dashboard.redImage);
+    DEV_Delay_ms(60000);
 
-    //     Serial.println("start clearing before deep sleep");
-    //     EPD_7IN5B_V2_Init();
-    //     EPD_7IN5B_V2_Clear();
+    Serial.println("start clearing before deep sleep");
+    EPD_7IN5B_V2_Init();
+    EPD_7IN5B_V2_Clear();
 
-    //     Serial.println("entering sleep mode");
-    //     EPD_7IN5B_V2_Sleep();
-    //     DEV_Delay_ms(2000); // important, at least 2s ()
-    //     // close 5V
-    //     Serial.println("close 5V, Module enters 0 power consumption ...\r\n");
-    //     DEV_Module_Exit();
+    Serial.println("entering sleep mode");
+    EPD_7IN5B_V2_Sleep();
+    DEV_Delay_ms(2000); // important, at least 2s ()
+    // close 5V
+    Serial.println("close 5V, Module enters 0 power consumption ...");
+    DEV_Module_Exit();
     // #endif
 
     #ifdef TEST_CANVAS_CREATION
         // Close the dashboard and free resources
     close_dashboard(&dashboard);
     #endif // TEST_CANVAS_CREATION
-    delay(10000); // Wait for 10 seconds before next update
+    Serial.println("Looping back for next update. 30s delay...");
+    delay(30000); // Wait for 30 seconds before next update
+    
 }

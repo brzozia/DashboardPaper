@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdint.h>
 
-#define ROWS 8
+#define ROWS 4
 #define COLUMNS 4
 #define STRING_SIZE 50
 
