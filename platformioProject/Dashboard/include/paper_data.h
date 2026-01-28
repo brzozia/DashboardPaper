@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 #define ROWS 8
-#define COLUMNS 3
+#define COLUMNS 4
 #define STRING_SIZE 50
 
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 100
 
 // Data to write on paper will be stored in Data struct
 // bb* - black box status
