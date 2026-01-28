@@ -31,7 +31,7 @@ int main(void)
     uint8_t csv_out = read_ips_from_csv(&dataToWrite, &readStartPoint);
 
     if(csv_out == 1){
-        printf("Reading and parsing data from csv file not successfull.");
+        printf("Error occured. Reading and parsing data from csv file not successfull.");
     }
 
     // some tests
