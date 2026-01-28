@@ -1,4 +1,5 @@
 #include "scraper.h"
+#include <WiFi.h>
 
 int extractBetween(String *line, int searchIndex, String startTag, String endTag, String *content)
 {
@@ -55,30 +56,85 @@ void extractTableRow(String *line, Data *data, uint8_t idx)
 
 void scrapeFromWeb(struct Data *data)
 { // TODO
+    WiFiClient client;
+  
+  //pozyskanie cookie (użycie HTTPClient nie działa)
+  String cookie = "";
+  if (client.connect("wiener.lan", 80)) {
+    client.println("POST / HTTP/1.1");
+    client.println("Host: wiener.lan");
+    client.println("User-Agent: ESP32");
+    client.println("Content-Type: application/x-www-form-urlencoded");
+    client.println("Content-Length: 10");
+    client.println();
+    client.println("username=paperBot");
+    
+    // Odpowiedź
+    Serial.println("Odpowiedź serwera:");
+    String line = client.readStringUntil('\n');
+    while (client.connected()) {
+      String body = client.readStringUntil('\n');
+      Serial.println(body);
+      Serial.println("koniec lini");
+      
+      if (body.startsWith("Set-Cookie:")) {
+        cookie = body.substring(12);
+        cookie.trim();
+        Serial.println("Znaleziono cookie: " + cookie);
+        break;
+      }
+
+      if (body == "\r") {
+        Serial.println("Koniec nagłówków");
+        break;
+      }
+    }
+    client.stop();
+  }
+
+
+  //GET content
   HTTPClient http;
+  http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
+  int httpResponseCode;
+  if(cookie==""){
+    Serial.println("No cookie obtained, aborting.");
+    return;
+  }
+
+
+
   http.begin(SERVER_URL);
+  http.addHeader("Accept", "text/html");
+  http.addHeader("Cookie", cookie);
+  http.addHeader("Connection", "keep-alive");
+  Serial.println("Getting protected content");
+  httpResponseCode = http.GET();
 
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httpRequestData = "username=paperBot";
+    if(httpResponseCode != 200) {
+      Serial.println("Failed to get protected content, HTTP response code: " + String(httpResponseCode));
+      http.end();
+      return;
+    } else {
+      Serial.println("Protected content retrieved successfully.");
+      String payload = http.getString();
+      Serial.println("--- Otrzymana treść strony ---");
+      Serial.println(payload); // TODO
+      Serial.println("--- Koniec treści ---");
+      http.end();
 
-  Serial.println("Sending form");
-  int httpResponseCode = http.POST(httpRequestData);
+      //zapis do pliku
+      File file = LittleFS.open(HTML_SERVER_FILE, "w");
+      if (!file)
+      {
+        Serial.println("Failed to open HTML file for writing");
+        return;
+      }
+      file.print(payload);
+      file.close();
+      Serial.println("HTML content saved to file.");
+    }
 
-  if (httpResponseCode > 0)
-  {
-    Serial.print("Kod odpowiedzi HTTP: ");
-    Serial.println(httpResponseCode);
-    String payload = http.getString(); // TODO zapisac jako plik i czytac po linijce? nw czy ramu wystarczy inaczej
-    Serial.println("--- Otrzymana treść strony ---");
-    Serial.println(payload); // TODO
-    Serial.println("--- Koniec treści ---");
-  }
-  else
-  {
-    Serial.print("Błąd podczas wysyłania POST: ");
-    Serial.println(httpResponseCode);
-  }
-  http.end();
 }
 
 void scrapeFromFile(struct Data *data)
@@ -133,7 +189,8 @@ void scrapeData(boolean getFromNet, struct Data *data)
   if (getFromNet == true && WiFi.status() == WL_CONNECTED)
   {
     Serial.println("Scraping data from website...");
-    scrapeFromWeb(data);
+    scrapeFromWeb(data); //and save to file
+    scrapeFromFile(data);
     return;
   }
   else

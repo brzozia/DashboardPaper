@@ -37,13 +37,17 @@ void DEV_Delay_ms(UDOUBLE xms)
 
 void DEV_GPIO_Init(void)
 {
+    //On e-Paper Driver HAT 
+    // Display Config in position B
+    // Interface Config in position 0 
+
     // set pin numbers 
-    EPD_RST_PIN     = 16;
-	EPD_DC_PIN      = 17;
-	EPD_CS_PIN      = 10; // SPI2 (HSPI)
-    EPD_PWR_PIN     = 18;
-	EPD_BUSY_PIN    = 19;
-    EPD_MOSI_PIN    = 11; // SPI2 (HSPI)
+    EPD_RST_PIN     = 4;
+	EPD_DC_PIN      = 5; 
+	EPD_CS_PIN      = 6; // SPI2 (HSPI)
+    EPD_PWR_PIN     = 7;
+	EPD_BUSY_PIN    = 15;
+    EPD_MOSI_PIN    = 11; // SPI2 (HSPI) DIN
 	EPD_SCLK_PIN    = 12; // SPI2 (HSPI)
 
     pinMode(EPD_BUSY_PIN, INPUT);
@@ -58,7 +62,7 @@ void DEV_GPIO_Init(void)
 
 UBYTE DEV_Module_Init(void)
 {
-    printf("/***************** Module Init ******************/ \r\n");
+    // printf("/***************** Module Init ******************/ \r\n");
 
     DEV_GPIO_Init();
 
@@ -66,19 +70,19 @@ UBYTE DEV_Module_Init(void)
 
     SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0)); //10MHz
 
-    printf("/***************** Module Init END ******************/ \r\n");
+    // printf("/***************** Module Init END ******************/ \r\n");
     return 0;
 
 }
 
 void DEV_Module_Exit(void)
 {
-    Serial.println("/***************** Module Exit ******************/");
+    // Serial.println("/***************** Module Exit ******************/");
     DEV_Digital_Write(EPD_CS_PIN, LOW);
     DEV_Digital_Write(EPD_PWR_PIN, LOW);
     DEV_Digital_Write(EPD_DC_PIN, LOW);
     DEV_Digital_Write(EPD_RST_PIN, LOW);
     SPI.endTransaction();
     SPI.end();
-    Serial.println("/***************** Module Exit END ******************/");
+    // Serial.println("/***************** Module Exit END ******************/");
 }

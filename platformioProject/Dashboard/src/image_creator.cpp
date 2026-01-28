@@ -1,5 +1,6 @@
 #include "image_creator.h"
 #include <stdlib.h>
+#include <Arduino.h>
 
 void initialize_dashboard(Dashboard* dashboard)
 {
@@ -7,11 +8,11 @@ void initialize_dashboard(Dashboard* dashboard)
     UWORD Imagesize = ((SCREEN_WIDTH % 8 == 0)? (SCREEN_WIDTH / 8 ): (SCREEN_WIDTH / 8 + 1)) * SCREEN_HEIGHT;
     
     if((dashboard->blackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-        printf("Failed to apply for black memory...\r\n");
+        Serial.println("Failed to apply for black memory...");
         return;
     }
     if((dashboard->redImage = (UBYTE *)malloc(Imagesize)) == NULL) {
-        printf("Failed to apply for red memory...\r\n");
+        Serial.println("Failed to apply for red memory...");
         return;
     }
 
@@ -68,10 +69,22 @@ void add_row_to_dashboard(Dashboard* dashboard)
     
     for (size_t i = 0; i < 4; i++)
     {
-        char* firstLetter = dashboard->loadedData->ipData[dashboard->current_rows_no][i];
-        Paint_DrawString_EN(line_positions_x[i] + TEXT_OFFSET_X, y_pos_start + TEXT_OFFSET_Y,
-                            firstLetter, &Font20, BLACK, WHITE
-                            );
+        if(i == 2 && (dashboard->loadedData->ipData[dashboard->current_rows_no][i][0] == '\0' || strcmp(dashboard->loadedData->ipData[dashboard->current_rows_no][i], "POWER ON") == 0)){
+            //power on in red
+            strcpy(dashboard->loadedData->ipData[dashboard->current_rows_no][i], "POWER ON"); //repair broken data
+
+            Paint_SelectImage(dashboard->redImage); 
+            char* firstLetter = dashboard->loadedData->ipData[dashboard->current_rows_no][i];
+            Paint_DrawString_EN(line_positions_x[i] + TEXT_OFFSET_X, y_pos_start + TEXT_OFFSET_Y,
+                        firstLetter, &Font20, BLACK, WHITE
+                        );
+            Paint_SelectImage(dashboard->blackImage);
+        }else{
+            char* firstLetter = dashboard->loadedData->ipData[dashboard->current_rows_no][i];
+            Paint_DrawString_EN(line_positions_x[i] + TEXT_OFFSET_X, y_pos_start + TEXT_OFFSET_Y,
+                                firstLetter, &Font20, BLACK, WHITE
+                                );
+            }
     }
     
     dashboard->current_rows_no += 1;
@@ -95,7 +108,14 @@ void add_BB_status_to_dashboard(Dashboard* dashboard)
                   );
     
     UWORD line_positions_x[4] = {TEMP_POS_X, HUMID_POS_X, LIGHT_POS_X, BB_STATUS_POS_X};
-char labels[4][30] = {"TEMP:   *", "HUMIDITY:", "LIGHT", "LAST LOG:"};
+char labels[4][30];
+
+snprintf(labels[0], sizeof(labels[0]), "TEMP:%.1f*C", dashboard->loadedData->bbTemp);
+snprintf(labels[1], sizeof(labels[1]), "HUMID:%d%%", dashboard->loadedData->bbHumid);
+snprintf(labels[2], sizeof(labels[2]), "LIGHT:%d", dashboard->loadedData->bbLight);
+snprintf(labels[3], sizeof(labels[3]), "LOG:%s", dashboard->loadedData->bbLog);  
+
+
 
     //vertical lines 
     for(UBYTE i=0; i < 4; i++)
@@ -158,7 +178,7 @@ void save_dashboard_to_txt(Dashboard* dashboard, const char* blackImageFile, con
         fwrite(dashboard->blackImage, sizeof(UBYTE), SCREEN_WIDTH * SCREEN_HEIGHT / 8, blackFile);
         fclose(blackFile);
     } else {
-        printf("Error opening black image file for writing.\n");
+        Serial.println("Error opening black image file for writing.");
     }
 
     // Save red image to bmp file
@@ -167,6 +187,6 @@ void save_dashboard_to_txt(Dashboard* dashboard, const char* blackImageFile, con
         fwrite(dashboard->redImage, sizeof(UBYTE), SCREEN_WIDTH * SCREEN_HEIGHT / 8, redFile);
         fclose(redFile);
     } else {
-        printf("Error opening red image file for writing.\n");
+        Serial.println("Error opening red image file for writing.");
     }
 }
