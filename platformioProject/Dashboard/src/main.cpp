@@ -58,53 +58,29 @@ void setup(void)
 void loop()
 {
     struct Data dataToWrite;
-    read_ips_from_csv(&dataToWrite, 0);
+    readDataFromCsv(&dataToWrite, 0);
     scrapeData(useWifi, &dataToWrite);
     dataToWrite.lastUpdate = time(NULL);
 
     Serial.println(dataToWrite.ipData[0][0]);
     Serial.println(dataToWrite.ipData[0][1]);
     Serial.println(dataToWrite.ipData[0][2]);
-    Serial.println(dataToWrite.ipData[0][3]);
     
     Serial.println(dataToWrite.ipData[1][0]);
     Serial.println(dataToWrite.ipData[1][1]);
     Serial.println(dataToWrite.ipData[1][2]);
-    Serial.println(dataToWrite.ipData[1][3]);
 
     Serial.println(dataToWrite.ipData[2][0]);
     Serial.println(dataToWrite.ipData[2][1]);
     Serial.println(dataToWrite.ipData[2][2]);
-    Serial.println(dataToWrite.ipData[2][3]);
 
     Serial.println(dataToWrite.bbTemp);
     Serial.println(dataToWrite.bbHumid);
     Serial.println(dataToWrite.lastUpdate);
+    Serial.println(dataToWrite.bbLog);
     delay(3000);
 
     // #ifdef TEST_CANVAS_CREATION
-    //     struct Data pseudoData;
-    //     pseudoData.lastUpdate = time(NULL);
-
-    //     strcpy(pseudoData.ipData[0][0], "Device_A");
-    //     strcpy(pseudoData.ipData[0][1], "192.168.1.1");
-    //     strcpy(pseudoData.ipData[0][2], "2023-01-01");
-    //     strcpy(pseudoData.ipData[0][3], "Active");
-
-    //     strcpy(pseudoData.ipData[1][0], "Device_B");
-    //     strcpy(pseudoData.ipData[1][1], "192.168.1.2");
-    //     strcpy(pseudoData.ipData[1][2], "2023-01-02");
-    //     strcpy(pseudoData.ipData[1][3], "Inactive");
-
-    //     strcpy(pseudoData.ipData[2][0], "Device_C");
-    //     strcpy(pseudoData.ipData[2][1], "192.168.1.3");
-    //     strcpy(pseudoData.ipData[2][2], "2023-01-03");
-    //     strcpy(pseudoData.ipData[2][3], "Active");
-
-    //     strcpy(pseudoData.ipData[3][0], "Device_D");
-    //     strcpy(pseudoData.ipData[3][1], "192.168.1.4");
-    //     strcpy(pseudoData.ipData[3][2], "2023-01-04");
-    //     strcpy(pseudoData.ipData[3][3], "Inactive");
 
     // Dashboard dashboard;
     // initialize_dashboard(&dashboard);

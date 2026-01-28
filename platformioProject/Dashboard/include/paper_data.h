@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define ROWS 8
-#define COLUMNS 4
+#define COLUMNS 3
 #define STRING_SIZE 50
 
 #define BUFFER_SIZE 100

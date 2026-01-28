@@ -1,6 +1,6 @@
 #include "scraper.h"
 
-uint extractBetween(String *line, int searchIndex, String startTag, String endTag, String *content)
+int extractBetween(String *line, int searchIndex, String startTag, String endTag, String *content)
 {
   int startPos = (*line).indexOf(startTag, searchIndex);
   if (startPos == -1)
@@ -23,12 +23,12 @@ void extractTableRow(String *line, Data *data, uint8_t idx)
 {
   uint8_t searchIndex = 0;
   uint8_t resultIdx = 0;
-  uint8_t endPos = 0;
+  int8_t endPos = 0;
 
   String content;
   String endTag = "</td>";
 
-  while (endPos != -1 && resultIdx < COLUMNS - 2)
+  while (endPos != -1 && resultIdx < COLUMNS - 1)
   {
     endPos = extractBetween(line, searchIndex, "<td>", endTag, &content);
     searchIndex = endPos + endTag.length();
@@ -47,7 +47,8 @@ void extractTableRow(String *line, Data *data, uint8_t idx)
     strcpy(data->ipData[idx][resultIdx], content.c_str());
   }
 
-  if(resultIdx==2){
+  // fill last column to not store trash (ale mozna tez usunac)
+  if(resultIdx==2 && COLUMNS>3){
     strcpy(data->ipData[idx][++resultIdx], "");
   }
 }
