@@ -79,8 +79,18 @@ void getCookie(String *cookie)
         *cookie = body.substring(setCookieName.length());
         (*cookie).trim();
         Serial.println("Cookie found: " + *cookie);
-        break;
+      Serial.println(body);
+      Serial.println("koniec lini");
+      
+
+      if (body.startsWith("Date")) {
+        date = body.substring(11);
+        date.trim();
+        Serial.println("Znaleziono date: " + date);
+        data->date_str = date;
       }
+
+
       if (body == "\r")
       {
         Serial.println("All headers parsed. No cookie found.");

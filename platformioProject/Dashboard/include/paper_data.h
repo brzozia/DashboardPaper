@@ -19,6 +19,7 @@ struct Data {
     uint8_t bbHumid;
     uint8_t bbLight;
     char bbLog[BUFFER_SIZE];
+    String date_str;
 };
 
 #endif // PAPER_DATA_H

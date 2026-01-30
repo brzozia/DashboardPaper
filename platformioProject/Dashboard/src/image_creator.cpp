@@ -125,13 +125,17 @@ void add_footer_to_dashboard(Dashboard* dashboard)
     Paint_DrawLine(0, SCREEN_HEIGHT - FOOTER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT - FOOTER_HEIGHT,
                    BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID);
     Paint_DrawString_EN(TEXT_OFFSET_X, SCREEN_HEIGHT - FOOTER_HEIGHT + TEXT_OFFSET_Y,
-                            "LAST UPDATE", &Font20, BLACK, WHITE);
+                            "LAST UPDATE", &Font20, BLACK, WHITE
+                            );
     
+
+    // char timestr[64];
+    // struct tm *tm_info = localtime(&dashboard->loadedData->lastUpdate);
+    // if (tm_info != NULL) {
+    //     strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tm_info);
+    // }
     char timestr[64];
-    struct tm *tm_info = localtime(&dashboard->loadedData->lastUpdate);
-    if (tm_info != NULL) {
-        strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tm_info);
-    }
+    strcpy(timestr, dashboard->loadedData->date_str.c_str());
                      
     Paint_DrawString_EN(UPDATE_TIME_POS_X, SCREEN_HEIGHT - FOOTER_HEIGHT + TEXT_OFFSET_Y,
                             timestr, &Font20, BLACK, WHITE);
