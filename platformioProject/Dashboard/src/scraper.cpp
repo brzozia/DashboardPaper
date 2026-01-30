@@ -60,6 +60,7 @@ void scrapeFromWeb(struct Data *data)
   
   //pozyskanie cookie (użycie HTTPClient nie działa)
   String cookie = "";
+  String date = "";
   if (client.connect("wiener.lan", 80)) {
     client.println("POST / HTTP/1.1");
     client.println("Host: wiener.lan");
@@ -77,6 +78,14 @@ void scrapeFromWeb(struct Data *data)
       Serial.println(body);
       Serial.println("koniec lini");
       
+
+      if (body.startsWith("Date")) {
+        date = body.substring(11);
+        date.trim();
+        Serial.println("Znaleziono date: " + date);
+        data->date_str = date;
+      }
+
       if (body.startsWith("Set-Cookie:")) {
         cookie = body.substring(12);
         cookie.trim();

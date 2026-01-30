@@ -12,7 +12,7 @@
 #include <EPD_7in5b_V2.h>
 #endif
 
-boolean useWifi = false;
+boolean useWifi = true;
 const char *ssid = "ALICE-CERN_lab";
 const char *password = "Alicja2024";
 
@@ -118,7 +118,7 @@ void loop()
 
     Serial.println("Dashboard images created.");
 
-    // #ifdef UPLOAD_TO_EPAPER
+    #ifdef UPLOAD_TO_EPAPER
     Serial.println("Uploading to e-paper...");
     if (DEV_Module_Init() != 0)
     {
@@ -132,9 +132,9 @@ void loop()
     EPD_7IN5B_V2_Clear();
     Serial.println("3");
 
-    Serial.println("start displaying for 60s");
+    Serial.println("start displaying for 30s");
     EPD_7IN5B_V2_Display(dashboard.blackImage, dashboard.redImage);
-    DEV_Delay_ms(60000);
+    DEV_Delay_ms(30000);
 
     Serial.println("start clearing before deep sleep");
     EPD_7IN5B_V2_Init();
@@ -146,7 +146,8 @@ void loop()
     // close 5V
     Serial.println("close 5V, Module enters 0 power consumption ...");
     DEV_Module_Exit();
-    // #endif
+    #endif
+
 
     #ifdef TEST_CANVAS_CREATION
         // Close the dashboard and free resources
