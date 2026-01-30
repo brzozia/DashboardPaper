@@ -35,7 +35,6 @@ void update_dashboard(Dashboard* dashboard, struct Data* newData)
     }
     add_BB_status_to_dashboard(dashboard);
     add_footer_to_dashboard(dashboard);
-
 }
 
 void clear_dashboard(Dashboard* dashboard)
@@ -58,21 +57,18 @@ void add_row_to_dashboard(Dashboard* dashboard)
                         );
 
     //Vertical separating lines
-    UWORD line_positions_x[4] = {NAME_COLUMN_START_X, IP_COLUMN_START_X, DATE_COLUMN_START_X, STATUS_COLUMN_START_X};
-    for(UBYTE i=0; i < 4; i++)
+    UWORD line_positions_x[COLUMNS] = {NAME_COLUMN_START_X, DATE_COLUMN_START_X, STATUS_COLUMN_START_X};
+    for(UBYTE i=0; i < COLUMNS; i++)
     {
         Paint_DrawLine(line_positions_x[i], y_pos_start, line_positions_x[i], y_pos_end,
                    BLACK, ROWS_LINE_WIDTH, LINE_STYLE_SOLID
                   );
     }
     
-    
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < COLUMNS; i++)
     {
-        if(i == 2 && (dashboard->loadedData->ipData[dashboard->current_rows_no][i][0] == '\0' || strcmp(dashboard->loadedData->ipData[dashboard->current_rows_no][i], "POWER ON") == 0)){
+        if(i == 2 && strcmp(dashboard->loadedData->ipData[dashboard->current_rows_no][i], "POWER ON") == 0){
             //power on in red
-            strcpy(dashboard->loadedData->ipData[dashboard->current_rows_no][i], "POWER ON"); //repair broken data
-
             Paint_SelectImage(dashboard->redImage); 
             char* firstLetter = dashboard->loadedData->ipData[dashboard->current_rows_no][i];
             Paint_DrawString_EN(line_positions_x[i] + TEXT_OFFSET_X, y_pos_start + TEXT_OFFSET_Y,
@@ -86,13 +82,11 @@ void add_row_to_dashboard(Dashboard* dashboard)
                                 );
             }
     }
-    
     dashboard->current_rows_no += 1;
 }
 
 void add_header_to_dashboard(Dashboard* dashboard)
 {
-
     Paint_SelectImage(dashboard->blackImage);
     Paint_DrawString_EN(TEXT_OFFSET_X, TEXT_OFFSET_Y,
                             "LAST USAGES", &Font20, BLACK, WHITE
@@ -104,58 +98,47 @@ void add_BB_status_to_dashboard(Dashboard* dashboard)
     Paint_SelectImage(dashboard->blackImage);
     // Horizontal line
     Paint_DrawLine(0, BLACK_BOX_POS_Y, SCREEN_WIDTH, BLACK_BOX_POS_Y,
-                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID
-                  );
+                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID );
     
     UWORD line_positions_x[4] = {TEMP_POS_X, HUMID_POS_X, LIGHT_POS_X, BB_STATUS_POS_X};
-char labels[4][30];
+    char labels[4][30];
 
-snprintf(labels[0], sizeof(labels[0]), "TEMP:%.1f*C", dashboard->loadedData->bbTemp);
-snprintf(labels[1], sizeof(labels[1]), "HUMID:%d%%", dashboard->loadedData->bbHumid);
-snprintf(labels[2], sizeof(labels[2]), "LIGHT:%d", dashboard->loadedData->bbLight);
-snprintf(labels[3], sizeof(labels[3]), "LOG:%s", dashboard->loadedData->bbLog);  
-
-
+    snprintf(labels[0], sizeof(labels[0]), "TEMP:%.1f*C", dashboard->loadedData->bbTemp);
+    snprintf(labels[1], sizeof(labels[1]), "HUMID:%d%%", dashboard->loadedData->bbHumid);
+    snprintf(labels[2], sizeof(labels[2]), "LIGHT:%d", dashboard->loadedData->bbLight);
+    snprintf(labels[3], sizeof(labels[3]), "LOG:%s", dashboard->loadedData->bbLog);  
 
     //vertical lines 
     for(UBYTE i=0; i < 4; i++)
     {
         Paint_DrawLine(line_positions_x[i], BLACK_BOX_POS_Y, line_positions_x[i], SCREEN_HEIGHT-FOOTER_HEIGHT,
-                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID
-                  );
+                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID);
         Paint_DrawString_EN(line_positions_x[i] + TEXT_OFFSET_X, BLACK_BOX_POS_Y + TEXT_OFFSET_Y,
-                            labels[i], &Font16, BLACK, WHITE
-                            );
+                            labels[i], &Font16, BLACK, WHITE);
     }
-
-    Paint_DrawString_EN(TEXT_OFFSET_X, BLACK_BOX_POS_Y + TEXT_OFFSET_Y,
-                            "BLACK BOX STATUS", &Font16, BLACK, WHITE
-                            );
-    
-
-    
+    Paint_DrawString_EN(TEXT_OFFSET_X, BLACK_BOX_POS_Y + TEXT_OFFSET_Y,"BLACK BOX STATUS", &Font16, BLACK, WHITE);
 }
 
 void add_footer_to_dashboard(Dashboard* dashboard)
 {
     Paint_SelectImage(dashboard->blackImage);
     Paint_DrawLine(0, SCREEN_HEIGHT - FOOTER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT - FOOTER_HEIGHT,
-                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID
-                  );
+                   BLACK, DOT_PIXEL_2X2, LINE_STYLE_SOLID);
     Paint_DrawString_EN(TEXT_OFFSET_X, SCREEN_HEIGHT - FOOTER_HEIGHT + TEXT_OFFSET_Y,
                             "LAST UPDATE", &Font20, BLACK, WHITE
                             );
     
 
+    // char timestr[64];
+    // struct tm *tm_info = localtime(&dashboard->loadedData->lastUpdate);
+    // if (tm_info != NULL) {
+    //     strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tm_info);
+    // }
     char timestr[64];
-    struct tm *tm_info = localtime(&dashboard->loadedData->lastUpdate);
-    if (tm_info != NULL) {
-        strftime(timestr, sizeof(timestr), "%Y-%m-%d %H:%M:%S", tm_info);
-    }
+    strcpy(timestr, dashboard->loadedData->date_str.c_str());
                      
     Paint_DrawString_EN(UPDATE_TIME_POS_X, SCREEN_HEIGHT - FOOTER_HEIGHT + TEXT_OFFSET_Y,
-                            timestr, &Font20, BLACK, WHITE
-                            );
+                            timestr, &Font20, BLACK, WHITE);
 }
 
 void close_dashboard(Dashboard* dashboard)

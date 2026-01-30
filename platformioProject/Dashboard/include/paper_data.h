@@ -4,8 +4,8 @@
 #include <time.h>
 #include <stdint.h>
 
-#define ROWS 4
-#define COLUMNS 4
+#define ROWS 5
+#define COLUMNS 3
 #define STRING_SIZE 50
 
 #define BUFFER_SIZE 100
@@ -19,6 +19,7 @@ struct Data {
     uint8_t bbHumid;
     uint8_t bbLight;
     char bbLog[BUFFER_SIZE];
+    String date_str;
 };
 
 #endif // PAPER_DATA_H

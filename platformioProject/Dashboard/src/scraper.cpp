@@ -1,9 +1,9 @@
 #include "scraper.h"
 #include <WiFi.h>
 
-int extractBetween(String *line, int searchIndex, String startTag, String endTag, String *content)
+int extractStringBetweenTags(String *line, String *content, int searchFrom, String startTag, String endTag)
 {
-  int startPos = (*line).indexOf(startTag, searchIndex);
+  int startPos = (*line).indexOf(startTag, searchFrom);
   if (startPos == -1)
   {
     *content = ""; // Start tag not found
@@ -20,47 +20,46 @@ int extractBetween(String *line, int searchIndex, String startTag, String endTag
   return endPos;
 }
 
-void extractTableRow(String *line, Data *data, uint8_t idx)
+void parseTableRow(String *line, Data *data, uint8_t rowId)
 {
-  uint8_t searchIndex = 0;
   uint8_t resultIdx = 0;
-  int8_t endPos = 0;
+  int searchIndex = 0;
+  int endPos = 0;
 
   String content;
   String endTag = "</td>";
 
+  // Check for element between tags "<td>""</td>"
   while (endPos != -1 && resultIdx < COLUMNS - 1)
   {
-    endPos = extractBetween(line, searchIndex, "<td>", endTag, &content);
-    searchIndex = endPos + endTag.length();
-    if(endPos!=-1){
-      strcpy(data->ipData[idx][resultIdx], content.c_str());
+    endPos = extractStringBetweenTags(line, &content, searchIndex, "<td>", endTag);
+    if (endPos != -1)
+    {
+      strcpy(data->ipData[rowId][resultIdx], content.c_str());
+      searchIndex += endPos + endTag.length();
       resultIdx += 1;
     }
   }
 
-  endPos = extractBetween(line, 0, "<td class=\"act-on\">", endTag, &content);
-  if(endPos!=-1){
-    strcpy(data->ipData[idx][resultIdx], content.c_str());
+  // Check for element between tags "<td class=act-on/act-off>""</td>"
+  endPos = extractStringBetweenTags(line, &content, 0, "<td class=\"act-on\">", endTag);
+  if (endPos != -1)
+  {
+    strcpy(data->ipData[rowId][resultIdx], content.c_str());
   }
-  endPos = extractBetween(line, 0, "<td class=\"act-off\">", endTag, &content);
-  if(endPos!=-1){
-    strcpy(data->ipData[idx][resultIdx], content.c_str());
-  }
-
-  // fill last column to not store trash (ale mozna tez usunac)
-  if(resultIdx==2 && COLUMNS>3){
-    strcpy(data->ipData[idx][++resultIdx], "");
+  endPos = extractStringBetweenTags(line, &content, 0, "<td class=\"act-off\">", endTag);
+  if (endPos != -1)
+  {
+    strcpy(data->ipData[rowId][resultIdx], content.c_str());
   }
 }
 
-void scrapeFromWeb(struct Data *data)
-{ // TODO
-    WiFiClient client;
-  
-  //pozyskanie cookie (użycie HTTPClient nie działa)
-  String cookie = "";
-  if (client.connect("wiener.lan", 80)) {
+void getCookie(String *cookie)
+{
+  // Connect to server to get cookie needed to access webiste with wiener data
+  WiFiClient client;
+  if (client.connect("wiener.lan", 80))
+  {
     client.println("POST / HTTP/1.1");
     client.println("Host: wiener.lan");
     client.println("User-Agent: ESP32");
@@ -68,135 +67,148 @@ void scrapeFromWeb(struct Data *data)
     client.println("Content-Length: 10");
     client.println();
     client.println("username=paperBot");
-    
-    // Odpowiedź
-    Serial.println("Odpowiedź serwera:");
-    String line = client.readStringUntil('\n');
-    while (client.connected()) {
+
+    // Parse response
+    Serial.println("Server response:");
+    while (client.connected())
+    {
       String body = client.readStringUntil('\n');
+      String setCookieName = "Set-Cookie:";
+      if (body.startsWith(setCookieName))
+      {
+        *cookie = body.substring(setCookieName.length());
+        (*cookie).trim();
+        Serial.println("Cookie found: " + *cookie);
       Serial.println(body);
       Serial.println("koniec lini");
       
-      if (body.startsWith("Set-Cookie:")) {
-        cookie = body.substring(12);
-        cookie.trim();
-        Serial.println("Znaleziono cookie: " + cookie);
-        break;
+
+      if (body.startsWith("Date")) {
+        date = body.substring(11);
+        date.trim();
+        Serial.println("Znaleziono date: " + date);
+        data->date_str = date;
       }
 
-      if (body == "\r") {
-        Serial.println("Koniec nagłówków");
+
+      if (body == "\r")
+      {
+        Serial.println("All headers parsed. No cookie found.");
         break;
       }
     }
     client.stop();
   }
+}
 
-
-  //GET content
-  HTTPClient http;
-  http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
-  int httpResponseCode;
-  if(cookie==""){
+void scrapeFromWeb(struct Data *data)
+{
+  // Tries to get cookie from server
+  String cookie = "";
+  uint8_t counter = 0;
+  do{
+    getCookie(&cookie);
+  } while (cookie.isEmpty() && ++counter < GET_COOKIE_TRIES);
+  
+  if (cookie.isEmpty())
+  {
     Serial.println("No cookie obtained, aborting.");
     return;
   }
 
-
-
+  // GET wiener data with cookie
+  int16_t httpResponseCode;
+  HTTPClient http;
+  http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
   http.begin(SERVER_URL);
   http.addHeader("Accept", "text/html");
   http.addHeader("Cookie", cookie);
   http.addHeader("Connection", "keep-alive");
-  Serial.println("Getting protected content");
+
+  Serial.println("Getting protected content...");
   httpResponseCode = http.GET();
-
-    if(httpResponseCode != 200) {
-      Serial.println("Failed to get protected content, HTTP response code: " + String(httpResponseCode));
-      http.end();
-      return;
-    } else {
-      Serial.println("Protected content retrieved successfully.");
-      String payload = http.getString();
-      Serial.println("--- Otrzymana treść strony ---");
-      Serial.println(payload); // TODO
-      Serial.println("--- Koniec treści ---");
-      http.end();
-
-      //zapis do pliku
-      File file = LittleFS.open(HTML_SERVER_FILE, "w");
-      if (!file)
-      {
-        Serial.println("Failed to open HTML file for writing");
-        return;
-      }
-      file.print(payload);
-      file.close();
-      Serial.println("HTML content saved to file.");
-    }
-
-}
-
-void scrapeFromFile(struct Data *data)
-{
-  File file = LittleFS.open(HTML_SERVER_FILE, "r");
-  if (!file)
+  if (httpResponseCode != 200)
   {
-    Serial.println("Failed to open HTML file for reading");
-    return;
-  }
-  uint8_t idx = 0;
-  boolean tableStart = false;
-  while (file.available() && idx < ROWS)
-  {
-    String line = file.readStringUntil('\n');
-    if (line.indexOf("<table class=\"log-table\">") != -1)
-    {
-      tableStart = true;
-    }
-    // Read table data
-    if (tableStart && line.indexOf("<td") != -1 && idx < ROWS)
-    {
-      int searchPos = 0;
-      while (idx < ROWS)
-      {
-        int trStart = line.indexOf("<tr>", searchPos);
-        if (trStart == -1)
-          break;
-        int trEnd = line.indexOf("</tr>", trStart);
-        if (trEnd == -1)
-          break;
-
-        String rowLine = line.substring(trStart, trEnd);
-        // Skip the header row (the one with <th>)
-        if (rowLine.indexOf("<th>") == -1)
-        {
-          extractTableRow(&rowLine, data, idx);
-          idx += 1;
-        }
-        searchPos = trEnd + 5;
-      }
-      break;
-    }
-  }
-  Serial.println("Reading file finished.");
-  file.close();
-  return;
-}
-
-void scrapeData(boolean getFromNet, struct Data *data)
-{
-  if (getFromNet == true && WiFi.status() == WL_CONNECTED)
-  {
-    Serial.println("Scraping data from website...");
-    scrapeFromWeb(data); //and save to file
-    scrapeFromFile(data);
+    Serial.println("Failed to get protected content, HTTP response code: " + String(httpResponseCode));
+    http.end();
     return;
   }
   else
   {
+    Serial.println("Protected content retrieved successfully.");
+    String payload = http.getString();
+    http.end();
+    // Save website content to file
+    File file;
+    if (openFile(&file, HTML_SERVER_FILE, WRITE_MODE) == 0 && file.available())
+    {
+      file.print(payload);
+      file.close();
+      Serial.println("HTML content saved to file.");
+    }
+  }
+}
+
+int8_t scrapeFromFile(struct Data *data)
+{
+  File file;
+  if (openFile(&file, HTML_SERVER_FILE, READ_MODE) != 0)
+  {
+    Serial.println("Failed to open HTML file for reading");
+    return -1;
+  }
+
+  // Read lines of file one by one
+  uint8_t rowId = 0;
+  boolean tableStarted = false;
+  while (file.available() && rowId < ROWS)
+  {
+    String line = file.readStringUntil('\n');
+    if (tableStarted) // If target table found then start processing
+    {
+      int16_t searchFrom = 0;
+      while (rowId < ROWS)
+      {
+        int16_t trStart = line.indexOf("<tr>", searchFrom);
+        if (trStart == -1)
+        {
+          break;
+        }
+        int16_t trEnd = line.indexOf("</tr>", trStart);
+        if (trEnd != -1)
+        {
+          String rowLine = line.substring(trStart, trEnd);
+          if (rowLine.indexOf("<th>") == -1) // Skip the header row (the one with <th>)
+          {
+            parseTableRow(&rowLine, data, rowId);
+            rowId += 1;
+          }
+          searchFrom = trEnd + 5;
+        }
+      }
+    }
+    // Check if target table found
+    if (!tableStarted && line.indexOf("<table class=\"log-table\">") != -1)
+    {
+      tableStarted = true;
+    }
+  }
+  Serial.println("Reading file finished.");
+  file.close();
+  return 0;
+}
+
+int8_t scrapeData(boolean getFromNet, struct Data *data)
+{
+  if (getFromNet == true && WiFi.status() == WL_CONNECTED)
+  {
+    Serial.println("Scraping data from website...");
+    scrapeFromWeb(data); // and save to file
+    return scrapeFromFile(data);
+  }
+  else
+  {
     Serial.println("Scraping data from file...");
-    scrapeFromFile(data);
-    return;
+    return scrapeFromFile(data);
   }
 }

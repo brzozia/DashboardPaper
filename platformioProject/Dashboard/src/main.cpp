@@ -13,29 +13,14 @@
 #endif
 
 boolean useWifi = false;
-const char *ssid = "ALICE-CERN_lab";
-const char *password = "Alicja2024";
-
-void listFiles()
-{
-    Serial.println("Listing LittleFS files:");
-    File root = LittleFS.open("/");
-    File file = root.openNextFile();
-    while (file)
-    {
-        Serial.print("FILE: ");
-        Serial.println(file.name());
-        file = root.openNextFile();
-    }
-}
+const char *ssid = "";
+const char *password = "";
 
 void setup(void)
 {
-    
     Serial.begin(115200);
     Serial.println("Waiting 10s before starting program...");
     delay(10000); // Wait for 10 seconds before starting program
-
 
     // Initialize littleFS
     if (!LittleFS.begin())
@@ -61,6 +46,7 @@ void setup(void)
 
 void loop()
 {
+    // Create object for data and gather data
     struct Data dataToWrite;
     readDataFromCsv(&dataToWrite, 0);
     scrapeData(useWifi, &dataToWrite);
@@ -78,47 +64,25 @@ void loop()
     Serial.println(dataToWrite.ipData[2][1]);
     Serial.println(dataToWrite.ipData[2][2]);
 
-
     Serial.println(dataToWrite.bbTemp);
     Serial.println(dataToWrite.bbHumid);
     Serial.println(dataToWrite.lastUpdate);
-    // delay(3000);
 
+    // Create canvas and prints to dashboard
     #ifdef TEST_CANVAS_CREATION
-    //     struct Data pseudoData;
-    //     pseudoData.lastUpdate = time(NULL);
-
-    //     strcpy(pseudoData.ipData[0][0], "Device_A");
-    //     strcpy(pseudoData.ipData[0][1], "192.168.1.1");
-    //     strcpy(pseudoData.ipData[0][2], "2023-01-01");
-    //     strcpy(pseudoData.ipData[0][3], "Active");
-
-    //     strcpy(pseudoData.ipData[1][0], "Device_B");
-    //     strcpy(pseudoData.ipData[1][1], "192.168.1.2");
-    //     strcpy(pseudoData.ipData[1][2], "2023-01-02");
-    //     strcpy(pseudoData.ipData[1][3], "Inactive");
-
-    //     strcpy(pseudoData.ipData[2][0], "Device_C");
-    //     strcpy(pseudoData.ipData[2][1], "192.168.1.3");
-    //     strcpy(pseudoData.ipData[2][2], "2023-01-03");
-    //     strcpy(pseudoData.ipData[2][3], "Active");
-
-    //     strcpy(pseudoData.ipData[3][0], "Device_D");
-    //     strcpy(pseudoData.ipData[3][1], "192.168.1.4");
-    //     strcpy(pseudoData.ipData[3][2], "2023-01-04");
-    //     strcpy(pseudoData.ipData[3][3], "Inactive");
 
     Dashboard dashboard;
     initialize_dashboard(&dashboard);
 
     // Update the dashboard with new data
     update_dashboard(&dashboard, &dataToWrite);
-    // save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
+    Serial.println("Dashboard images created.");
+
     #endif // TEST_CANVAS_CREATION
 
     Serial.println("Dashboard images created.");
 
-    // #ifdef UPLOAD_TO_EPAPER
+    #ifdef UPLOAD_TO_EPAPER
     Serial.println("Uploading to e-paper...");
     if (DEV_Module_Init() != 0)
     {
@@ -132,27 +96,28 @@ void loop()
     EPD_7IN5B_V2_Clear();
     Serial.println("3");
 
-    Serial.println("start displaying for 60s");
+    Serial.println("Start displaying for 60s");
+    Serial.println("start displaying for 30s");
     EPD_7IN5B_V2_Display(dashboard.blackImage, dashboard.redImage);
-    DEV_Delay_ms(60000);
+    DEV_Delay_ms(30000);
 
-    Serial.println("start clearing before deep sleep");
+    Serial.println("Start clearing before deep sleep");
     EPD_7IN5B_V2_Init();
     EPD_7IN5B_V2_Clear();
 
-    Serial.println("entering sleep mode");
+    Serial.println("Entering sleep mode");
     EPD_7IN5B_V2_Sleep();
     DEV_Delay_ms(2000); // important, at least 2s ()
     // close 5V
-    Serial.println("close 5V, Module enters 0 power consumption ...");
+    Serial.println("Close 5V, Module enters 0 power consumption ...");
     DEV_Module_Exit();
-    // #endif
+    #endif
+
 
     #ifdef TEST_CANVAS_CREATION
-        // Close the dashboard and free resources
+    // Close the dashboard and free resources
     close_dashboard(&dashboard);
     #endif // TEST_CANVAS_CREATION
     Serial.println("Looping back for next update. 30s delay...");
-    delay(30000); // Wait for 30 seconds before next update
-    
+    delay(90000); // Wait for 90 seconds before next update
 }
