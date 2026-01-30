@@ -5,4 +5,4 @@
 
 #define CSV_FILE "/blackbox.csv"
 
-uint8_t readDataFromCsv(struct Data *data, long *position);
+int8_t readDataFromCsv(struct Data *data, long *position);
