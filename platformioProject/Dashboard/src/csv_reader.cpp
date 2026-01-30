@@ -1,6 +1,6 @@
 #include "csv_reader.h"
 
-uint8_t readDataFromCsv(struct Data *dataToWrite, long *position){
+int8_t readDataFromCsv(struct Data *dataToWrite, long *position){
     File file;
     openFile(&file, CSV_FILE, READ_MODE);
 
