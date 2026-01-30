@@ -76,10 +76,11 @@ void loop()
 
     // Update the dashboard with new data
     update_dashboard(&dashboard, &dataToWrite);
-    // save_dashboard_to_txt(&dashboard, "blackImage.txt", "redImage.txt");
+    Serial.println("Dashboard images created.");
+
     #endif // TEST_CANVAS_CREATION
 
-    Serial.println("Dashboard images created.");
+    
 
     // #ifdef UPLOAD_TO_EPAPER
     Serial.println("Uploading to e-paper...");
