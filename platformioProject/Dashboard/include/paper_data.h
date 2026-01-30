@@ -4,8 +4,8 @@
 #include <time.h>
 #include <stdint.h>
 
-#define ROWS 4
-#define COLUMNS 4
+#define ROWS 5
+#define COLUMNS 3
 #define STRING_SIZE 50
 
 #define BUFFER_SIZE 100

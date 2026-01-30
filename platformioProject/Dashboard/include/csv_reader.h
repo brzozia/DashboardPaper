@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <LittleFS.h>
 #include "paper_data.h"
+#include "fs_helper.h"
 
 #define CSV_FILE "/blackbox.csv"
 
